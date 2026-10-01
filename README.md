@@ -24,29 +24,29 @@ In these examples, the fine-tuned ControlNet produces detailed portraits with ex
 
 Given a sketch $s$, the model represents a conditional distribution $p_\theta(x_0\mid s)$ over photographs. The forward process corrupts the photograph at a randomly sampled noise level:
 
-$$
+```math
 x_t=a_t x_0+b_t\epsilon,\qquad
 a_t=\sqrt{\bar\alpha_t},\quad b_t=\sqrt{1-\bar\alpha_t},\quad
 \epsilon\sim\mathcal N(0,I).
-$$
+```
 
 Here $\bar\alpha_t=\prod_{j=1}^{t}(1-\beta_j)$, with $\beta_j$ the forward noise variance. Both U-Nets use 1,000 cosine-scheduled noise levels at **256 x 256** resolution. Their four-channel input concatenates the grayscale sketch and noisy RGB photograph. The network predicts velocity rather than the image directly:
 
-$$
+```math
 v=a_t\epsilon-b_t x_0,\qquad
 \hat x_0=a_t x_t-b_t v_\theta(x_t,s,t).
-$$
+```
 
 Training combines velocity regression with paired-image reconstruction:
 
-$$
+```math
 \mathcal L=
 \mathbb E_{s,x_0,t,\epsilon}
 \left[
-\operatorname{MSE}(v_\theta,v)
-+0.25\,\operatorname{MAE}(\hat x_0,x_0)
+\mathrm{MSE}(v_\theta,v)
++0.25\,\mathrm{MAE}(\hat x_0,x_0)
 \right].
-$$
+```
 
 The **original UNet** has 22.78M parameters, GroupNorm residual blocks, timestep embeddings, multiscale sketch features and bottleneck attention. **UNetV2** expands this to 41.48M parameters through deeper residual stages, timestep-dependent scale/shift normalization, residual up/downsampling, attention at 32 x 32 and 16 x 16, and sketch features injected directly into the decoder. Its architectural choices draw on [ADM](https://arxiv.org/abs/2105.05233); it is not the full ADM model or a pretrained checkpoint.
 
@@ -60,12 +60,12 @@ The second approach starts with published [Stable Diffusion 1.5](https://hugging
 
 A frozen VAE encodes each photograph into a scaled latent $z_0=kz$, with $z\sim q_\phi(z\mid x)$. At 512 x 512 image resolution, the diffusion state has shape **4 x 64 x 64**. ControlNet processes the sketch and supplies residual features to the frozen SD U-Net. Only ControlNet parameters are updated:
 
-$$
+```math
 \mathcal L_{\mathrm{CN}}=
 \mathbb E\left[
-\operatorname{MSE}\bigl(\epsilon_\theta(z_t,s,c,t),\epsilon\bigr)
+\mathrm{MSE}\bigl(\epsilon_\theta(z_t,s,c,t),\epsilon\bigr)
 \right].
-$$
+```
 
 Here $c$ is the text embedding; $\theta$ denotes the trainable ControlNet parameters within the combined predictor. The VAE, text encoder and SD U-Net remain frozen. The objective is latent noise prediction, not the pixel-space velocity objective above. This follows the spatial-conditioning approach of [ControlNet](https://arxiv.org/abs/2302.05543).
 
