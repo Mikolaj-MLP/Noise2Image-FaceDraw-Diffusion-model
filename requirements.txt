@@ -1,9 +1,10 @@
-torch>=2.0.0
-torchvision>=0.15.0
+torch>=2.3.0
+torchvision>=0.18.0
 numpy
 Pillow
 python-dotenv
 matplotlib
+pandas
 tqdm
 ipykernel
 ipython
